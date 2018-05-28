@@ -53,7 +53,7 @@ function(ada_add_executable SRCFOLDER OUTDIR #[[ targets ]])
 endfunction()
 
 
-function(add_ada_library TARGET SRCFOLDER)
+function(ada_add_library TARGET SRCFOLDER)
 
     get_filename_component(_basename ${SRCFOLDER} NAME)
     set(_workspace ${PROJECT_BINARY_DIR}/${_basename})
@@ -83,7 +83,7 @@ function(add_ada_library TARGET SRCFOLDER)
                 -aP ${ADA_GPR_DIR}
                 -aP ${ADA_GPRIMPORT_DIR}
                 --prefix=${CMAKE_INSTALL_PREFIX})
-endfunction(add_ada_library)
+endfunction()
 
 
 function(ada_export_package)
@@ -117,6 +117,7 @@ function (ada_find_package_include_dir RETURN PACKAGE_DIR)
     get_filename_component(_dir ${_dir} DIRECTORY)
     set(${RETURN} ${_dir}/include PARENT_SCOPE)
 endfunction()
+
 
 function (ada_find_package_library_dir RETURN PACKAGE_DIR)
     # Just three up
