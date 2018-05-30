@@ -53,36 +53,39 @@ function(ada_add_executable SRCFOLDER OUTDIR #[[ targets ]])
 endfunction()
 
 
-function(ada_add_library TARGET SRCFOLDER)
+function(ada_add_library TARGET SRCFOLDER GPRFILE)
 
     get_filename_component(_basename ${SRCFOLDER} NAME)
     set(_workspace ${PROJECT_BINARY_DIR}/${_basename})
+
+    message("Generating target ${TARGET} to build ${GPRFILE} Ada library")
 
     # working space:
     file(COPY ${SRCFOLDER}
             DESTINATION ${PROJECT_BINARY_DIR})
 
-    file(GLOB _gprfile "${_workspace}/*.gpr")
-
-    message(STATUS "Building ${_gprfile} in ${SRCFOLDER}")
-
     add_custom_target(${TARGET}
             ALL
 
+            COMMENT "Building ${GPRFILE} in ${SRCFOLDER}"
             # build
             COMMAND gprbuild
-                -p -j0 -P ${_gprfile}
+                -p -j0 -P ${_workspace}/${GPRFILE}
                 -XROS_BUILD=Yes
                 -aP ${ADA_GPR_DIR}
                 -aP ${ADA_GPRIMPORT_DIR}
 
+            COMMENT "Installing ${GPRFILE} in ${CMAKE_INSTALL_PREFIX}"
             # install
             COMMAND gprinstall
-                -f -m -p -P ${_gprfile}
+                -f -m -p -P ${_workspace}/${GPRFILE}
                 -XROS_BUILD=Yes
                 -aP ${ADA_GPR_DIR}
                 -aP ${ADA_GPRIMPORT_DIR}
-                --prefix=${CMAKE_INSTALL_PREFIX})
+                --prefix=${CMAKE_INSTALL_PREFIX}
+
+            COMMENT "${GPRFILE} (${_basename}) installation complete"
+            )
 endfunction()
 
 
@@ -128,7 +131,7 @@ function (ada_find_package_library_dir RETURN PACKAGE_DIR)
 endfunction()
 
 
-function(ada_generate_binding TARGET SRCFOLDER INCLUDE #[[ ARGN ]])
+function(ada_generate_binding TARGET SRCFOLDER GPRFILE INCLUDE #[[ ARGN ]])
     # Generate corresponding Ada specs, compile it and deploy it
     # TARGET is the desired target name to depend on this
     # SRCFOLDER is a preexisting ada project prepared to compile in "gen" the generated specs
@@ -144,7 +147,7 @@ function(ada_generate_binding TARGET SRCFOLDER INCLUDE #[[ ARGN ]])
          DESTINATION ${PROJECT_BINARY_DIR})
 
     file(MAKE_DIRECTORY ${_workspace}/gen)
-    file(GLOB _gprfile "${_workspace}/*.gpr")
+    set(_gprfile ${GPRFILE})
 
     # Prepare extra includes
     if(NOT INCLUDE STREQUAL "")
@@ -158,6 +161,7 @@ function(ada_generate_binding TARGET SRCFOLDER INCLUDE #[[ ARGN ]])
 
             WORKING_DIRECTORY ${_workspace}/gen
 
+            COMMENT "Generating autobinding for project ${_gprfile}..."
             COMMAND g++
                 -fdump-ada-spec-slim
                 -C
@@ -172,18 +176,23 @@ function(ada_generate_binding TARGET SRCFOLDER INCLUDE #[[ ARGN ]])
 
             DEPENDS ${_workspace}/gen/generated_flag
 
+            COMMENT "Building ${_gprfile} Ada project"
             COMMAND gprbuild
-                -p -j0 -P ${_gprfile}
+                -p -j0 -P ${_workspace}/${_gprfile}
                 -XROS_BUILD=Yes
                 -aP ${ADA_GPR_DIR}
                 -aP ${ADA_GPRIMPORT_DIR}
 
+            COMMENT "Installing ${_gprfile} Ada project"
             COMMAND gprinstall
-                -f -m -p -P ${_gprfile}
+                -f -m -p -P ${_workspace}/${_gprfile}
                 -XROS_BUILD=Yes
                 -aP ${ADA_GPR_DIR}
                 -aP ${ADA_GPRIMPORT_DIR}
-                --prefix=${CMAKE_INSTALL_PREFIX})
+                --prefix=${CMAKE_INSTALL_PREFIX}
+
+            COMMENT "${_gprfile} (${_basename}) installed"
+            )
 endfunction()
 
 
