@@ -221,3 +221,30 @@ function(ada_import_c_libraries #[[ ARGN ]])
                 ${ADA_GPRIMPORT_DIR}/clib_${_ext_safe_name}.gpr)
     endforeach()
 endfunction()
+
+# Make foreign msgs usable from the ada side, manually
+function(ada_import_msgs PKG_NAME)
+
+    if(${PKG_NAME} STREQUAL ${PROJECT_NAME})
+        message("Generating Ada binding for current package messages")
+        set(_depends
+                ${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}__rosidl_typesupport_c.so
+                ${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}__rosidl_typesupport_introspection_c.so)
+        ada_import_c_libraries(${_depends})
+        set(_pkg_lib_path ${CMAKE_INSTALL_PREFIX}/lib)
+        set(_pkg_include_path ${CMAKE_INSTALL_PREFIX}/include)
+    else()
+        message("Generating Ada binding for installed package ${PKG_NAME}")
+        find_package(${PKG_NAME} REQUIRED)
+        ada_import_c_libraries(${${PKG_NAME}_LIBRARIES})
+        ada_find_package_library_dir(_pkg_lib_path ${${PKG_NAME}_DIR})
+        ada_find_package_include_dir(_pkg_include_path ${${PKG_NAME}_DIR})
+    endif()
+
+    set(_pkg_name ${PKG_NAME})
+
+    configure_file(
+            ${ADA_RESOURCE_DIR}/msg_import.gpr.in
+            ${ADA_GPRIMPORT_DIR}/ros2_msgs_${PKG_NAME}.gpr
+    )
+endfunction()
