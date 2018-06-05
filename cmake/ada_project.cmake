@@ -1,6 +1,6 @@
 message("Ada CMake extensions loaded (${PROJECT_NAME}) v${PROJECT_VERSION}")
 
-function(ada_add_executable SRCFOLDER OUTDIR #[[ targets ]])
+function(ada_add_executables GPR_TARGET SRCFOLDER OUTDIR #[[ targets ]])
 # SRCFOLDER: the path to the GPR-containing project
 # OUTFOLDER: relative path in SRCFOLDER where the real targets are built
 # TARGETS: each executable name built by this project, without path
@@ -14,7 +14,7 @@ function(ada_add_executable SRCFOLDER OUTDIR #[[ targets ]])
 
     # the target that builds the Ada project
     add_custom_target(
-            ${_basename}_phony
+            ${GPR_TARGET}
             # ALL
             WORKING_DIRECTORY ${_workspace}
 
@@ -23,7 +23,7 @@ function(ada_add_executable SRCFOLDER OUTDIR #[[ targets ]])
                 -aP ${ADA_GPRIMPORT_DIR}
                 -p -j0
 
-            COMMENT "${_basename} Ada target built"
+            COMMENT "${GPR_TARGET} Ada project build target created"
     )
 
     foreach(TARGET ${ARGN})
@@ -44,7 +44,7 @@ function(ada_add_executable SRCFOLDER OUTDIR #[[ targets ]])
 
         # ensure the Ada project is built before so the post-command works
         # make the copy in place after building
-        add_dependencies(${TARGET} ${_basename}_phony)
+        add_dependencies(${TARGET} ${GPR_TARGET})
 
         # must go into "lib" or ros bash completion misses it (duh)
         install(TARGETS ${TARGET} DESTINATION lib/${PROJECT_NAME}/)
