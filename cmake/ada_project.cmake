@@ -245,6 +245,6 @@ function(ada_import_msgs PKG_NAME)
 
     configure_file(
             ${ADA_RESOURCE_DIR}/msg_import.gpr.in
-            ${ADA_GPRIMPORT_DIR}/ros2_msgs_${PKG_NAME}.gpr
+            ${ADA_GPRIMPORT_DIR}/ros2_typesupport_${PKG_NAME}.gpr
     )
 endfunction()
