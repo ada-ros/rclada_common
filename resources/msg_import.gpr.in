@@ -6,7 +6,7 @@
 with "clib_@_pkg_name@_rosidl_typesupport_c";
 with "clib_@_pkg_name@_rosidl_typesupport_introspection_c";
 
-library project ros2_msgs_@_pkg_name@ is
+library project ros2_typesupport_@_pkg_name@ is
 
    For externally_built use "true";
    for Languages use ("C");
@@ -20,4 +20,4 @@ library project ros2_msgs_@_pkg_name@ is
    --                            "-l@_pkg_name@__typesupport_introspection_c");
    -- end Linker;
 
-end ros2_msgs_@_pkg_name@;
+end ros2_typesupport_@_pkg_name@;
