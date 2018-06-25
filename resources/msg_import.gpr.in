@@ -15,9 +15,11 @@ library project ros2_typesupport_@_pkg_name@ is
    for Source_Dirs use ("@_pkg_include_path@");  -- where to find relateds *.h
    For Library_Kind use "dynamic";
 
-   -- package Linker is
-   --    for Linker_Options use ("-l@_pkg_name@__typesupport_c",
-   --                            "-l@_pkg_name@__typesupport_introspection_c");
-   -- end Linker;
+   package Linker is
+      --  Should not be needed once static generation is in place
+      for Linker_Options use ("-Wl,--no-as-needed",
+                              "-L@_pkg_lib_path@",
+                              "-l@_pkg_name@__rosidl_generator_c");
+   end Linker;
 
 end ros2_typesupport_@_pkg_name@;
