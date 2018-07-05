@@ -4,15 +4,7 @@ project C_Builtins is
 
    type Yes_No is ("Yes", "No");
 
-   Ros_Build  : Yes_No := external ("ROS_BUILD", "No");
-
-   Gen_Prefix := "";
-   case Ros_Build is
-      when "Yes" => Gen_Prefix := ".";
-      when "No"  => Gen_Prefix := "../../../build/rclada_common/gpr_c_builtins";
-   end case;
-
-   for Source_Dirs use (Gen_Prefix & "/gen",
+   for Source_Dirs use ("gen",
                         "src");
 
    for Object_Dir  use "obj";
