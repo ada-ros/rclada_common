@@ -45,7 +45,7 @@ include(cmake/ada_project.cmake)
 # Generate some common C headers used by rosidl, rclada...
 ada_generate_binding(
         ada_specs_common
-        ${PROJECT_SOURCE_DIR}/gpr_c_builtins
+        gpr_c_builtins
         c_builtins.gpr
         ""
         /usr/include/${CMAKE_LIBRARY_ARCHITECTURE}/bits/stdint-intn.h

@@ -58,6 +58,8 @@ endfunction()
 
 
 function(ada_add_library TARGET SRCDIR GPRFILE)
+    ada_priv_expand_srcdir(_srcdir ${SRCDIR})
+
     add_custom_target(${TARGET}
             ALL
             COMMAND_EXPAND_LISTS
@@ -65,19 +67,19 @@ function(ada_add_library TARGET SRCDIR GPRFILE)
             COMMENT "Building ${GPRFILE} from ${SRCDIR}"
             # build
             COMMAND gprbuild
-                -p -j0 -P ${PROJECT_SOURCE_DIR}/${SRCDIR}/${GPRFILE}
+                -p -j0 -P ${_srcdir}/${GPRFILE}
                "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"
                 --relocate-build-tree=${PROJECT_BINARY_DIR}
 
             COMMENT "Installing ${GPRFILE} in ${CMAKE_INSTALL_PREFIX}"
             # install
             COMMAND gprinstall
-                -f -m -p -P ${PROJECT_SOURCE_DIR}/${SRCDIR}/${GPRFILE}
+                -f -m -p -P ${_srcdir}/${GPRFILE}
                 "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"
                 --relocate-build-tree=${PROJECT_BINARY_DIR}
                 --prefix=${CMAKE_INSTALL_PREFIX}
 
-            COMMENT "${GPRFILE} (${SRCDIR}) installation complete"
+            COMMENT "${GPRFILE} (${_srcdir}) installation complete"
             )
 endfunction()
 
@@ -151,39 +153,38 @@ function(ada_generate_binding TARGET SRCDIR GPRFILE INCLUDE #[[ ARGN ]])
     # SRCDIR is a preexisting ada project prepared to compile in "gen" the generated specs
     # INCLUDE, list (;-separated) of folders to add with -I
 
-    # Compile everything and install
-    # This must run everytime so changes are detected
+    ada_priv_expand_srcdir(_srcdir ${SRCDIR})
 
-    set(_gen_flag ${SRCDIR}/gen/generated)
+    set(_gen_flag ${_srcdir}/gen/generated)
 
     add_custom_target(${TARGET}
         ALL
-        COMMAND_EXPAND_LISTS
-
         DEPENDS ${_gen_flag}
+        COMMAND_EXPAND_LISTS
 
         COMMENT "Building ${GPRFILE} Ada project"
         COMMAND gprbuild
-            -p -j0 -P ${SRCDIR}/${GPRFILE}
+            -p -j0 -P ${_srcdir}/${GPRFILE}
             "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"
             --relocate-build-tree=${PROJECT_BINARY_DIR}
 
         # This might need to be separated into a custom script, since it now runs at build time
         COMMENT "Installing ${GPRFILE} Ada project"
         COMMAND gprinstall
-            -f -m -p -P ${SRCDIR}/${GPRFILE}
+            -f -m -p -P ${_srcdir}/${GPRFILE}
             "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"
             --relocate-build-tree=${PROJECT_BINARY_DIR}
             --prefix=${CMAKE_INSTALL_PREFIX}
 
-        COMMENT "${GPRFILE} (${SRCDIR}) installed"
-        )
+        COMMENT "${GPRFILE} (${_srcdir}}) installed"
+    )
 
     # Generate autobinding
     add_custom_command(
             OUTPUT ${_gen_flag}
 
-            WORKING_DIRECTORY ${SRCDIR}/gen
+            COMMAND_EXPAND_LISTS
+            WORKING_DIRECTORY ${_srcdir}/gen
 
             COMMENT "Generating autobinding for project ${GPRFILE}..."
             COMMAND g++
@@ -217,9 +218,13 @@ function(ada_import_c_libraries #[[ ARGN ]])
         #message("XXXXXXXXXXXXXX ${_ext_lib_name}")
         #message("XXXXXXXXXXXXXX ${_ext_lib_path}")
 
+        set(_gpr clib_${_ext_safe_name}.gpr)
         configure_file(
                 ${ADA_RESOURCE_DIR}/external_c_lib.gpr.in
-                ${CMAKE_INSTALL_PREFIX}/share/gprimport/clib_${_ext_safe_name}.gpr)
+                ${PROJECT_BINARY_DIR}/${_gpr})
+
+        install(FILES       ${PROJECT_BINARY_DIR}/${_gpr}
+                DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gprimport)
     endforeach()
 endfunction()
 
@@ -248,4 +253,12 @@ function(ada_import_msgs PKG_NAME)
             ${ADA_RESOURCE_DIR}/msg_import.gpr.in
             ${CMAKE_INSTALL_PREFIX}/share/gprimport/ros2_typesupport_${PKG_NAME}.gpr
     )
+endfunction()
+
+function(ada_priv_expand_srcdir RESULT SRCDIR)
+    if(IS_ABSOLUTE ${SRCDIR})
+        set(${RESULT} ${SRCDIR} PARENT_SCOPE)
+    else()
+        set(${RESULT} ${PROJECT_SOURCE_DIR}/${SRCDIR} PARENT_SCOPE)
+    endif()
 endfunction()
