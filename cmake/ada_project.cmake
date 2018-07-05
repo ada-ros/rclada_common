@@ -5,31 +5,28 @@ function(ada_begin_package)
     message(STATUS "${PROJECT_NAME} version ${PROJECT_VERSION}")
 endfunction()
 
-function(ada_add_executables GPR_TARGET SRCFOLDER OUTDIR #[[ targets ]])
+function(ada_add_executables GPR_TARGET SRCDIR OUTDIR #[[ targets ]])
 # SRCFOLDER: the path to the GPR-containing project
 # OUTFOLDER: relative path in SRCFOLDER where the real targets are built
 # TARGETS: each executable name built by this project, without path
 
-    get_filename_component(_basename ${SRCFOLDER} NAME)
-    set(_workspace ${PROJECT_BINARY_DIR}/${_basename})
+    ada_priv_expand_srcdir(_srcdir ${SRCDIR})
 
-    # working space:
-    file(COPY ${SRCFOLDER}
-            DESTINATION ${PROJECT_BINARY_DIR})
-
-    # the target that builds the Ada project
+    # the target that builds the Ada project and true Ada executables
     add_custom_target(
             ${GPR_TARGET}
             # ALL
-            WORKING_DIRECTORY ${_workspace}
-
+            COMMAND_EXPAND_LISTS
+            WORKING_DIRECTORY ${_srcdir}
             COMMAND gprbuild
                 "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"
                 -p -j0
+                --relocate-build-tree=${PROJECT_BINARY_DIR}
 
             COMMENT "${GPR_TARGET} Ada project build target created"
     )
 
+    # Fake targets (to be indexed by autocompletion) and its replacement
     foreach(TARGET ${ARGN})
         # Fake exec to be able to install an executable target
         add_executable(${TARGET} ${ADA_RESOURCE_DIR}/rclada_fake_target.c)
@@ -38,10 +35,9 @@ function(ada_add_executables GPR_TARGET SRCFOLDER OUTDIR #[[ targets ]])
         add_custom_command(
                 TARGET ${TARGET}
                 POST_BUILD
-                WORKING_DIRECTORY ${_workspace}
                 COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/${TARGET}
                 COMMAND ${CMAKE_COMMAND} -E copy
-                    ${_workspace}/${OUTDIR}/${TARGET}
+                    ${PROJECT_BINARY_DIR}/${OUTDIR}/${TARGET}
                     ${PROJECT_BINARY_DIR}/${TARGET}
                 COMMENT "${TARGET} Ada binary put in place"
         )
@@ -51,7 +47,8 @@ function(ada_add_executables GPR_TARGET SRCFOLDER OUTDIR #[[ targets ]])
         add_dependencies(${TARGET} ${GPR_TARGET})
 
         # must go into "lib" or ros bash completion misses it (duh)
-        install(TARGETS ${TARGET} DESTINATION lib/${PROJECT_NAME}/)
+        install(TARGETS     ${TARGET}
+                DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/)
     endforeach()
 
 endfunction()
@@ -105,13 +102,13 @@ function(ada_end_package)
     # The configuration file, at a minimum, should propagate the
     # ADA_GPR_DIRS and ADA_GPRIMPORT_DIRS of the package
     # (which are prepared in the ada_begin_package)
-    get_filename_component(_conf_file ${_conf_file_in} NAME_WE)
+    set(_conf_file ${PROJECT_NAME}Config.cmake)
     configure_file(
             ${_conf_file_in}
-            ${PROJECT_BINARY_DIR}/${_conf_file}.cmake
+            ${PROJECT_BINARY_DIR}/${_conf_file}
             @ONLY)
     install(FILES
-            ${PROJECT_BINARY_DIR}/${_conf_file}.cmake
+            ${PROJECT_BINARY_DIR}/${_conf_file}
             DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/cmake)
 
     # Version is dealt with with default CMake helpers
@@ -152,6 +149,7 @@ function(ada_generate_binding TARGET SRCDIR GPRFILE INCLUDE #[[ ARGN ]])
     # TARGET is the desired target name to depend on this
     # SRCDIR is a preexisting ada project prepared to compile in "gen" the generated specs
     # INCLUDE, list (;-separated) of folders to add with -I
+    # ARGN, headers to generate
 
     ada_priv_expand_srcdir(_srcdir ${SRCDIR})
 
@@ -167,6 +165,7 @@ function(ada_generate_binding TARGET SRCDIR GPRFILE INCLUDE #[[ ARGN ]])
             -p -j0 -P ${_srcdir}/${GPRFILE}
             "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"
             --relocate-build-tree=${PROJECT_BINARY_DIR}
+            -cargs "$<$<BOOL:${INCLUDE}>:-I$<JOIN:${INCLUDE},;-I>>"
 
         # This might need to be separated into a custom script, since it now runs at build time
         COMMENT "Installing ${GPRFILE} Ada project"
@@ -202,7 +201,17 @@ function(ada_import_c_libraries #[[ ARGN ]])
     # Expects a list of absolute paths to libs
     # One GPR file per path will be generated
 
+    list(REMOVE_DUPLICATES ARGN)
+    list(SORT ARGN)
+
     foreach(_lib ${ARGN})
+        message(STATUS "Importing C lib for Ada: ${_lib}")
+
+        if (NOT (${_lib} MATCHES ".*[.]so" OR ${_lib} MATCHES ".*[.]a"))
+            message(STATUS "!!! !!! Bad C library: ${_lib}")
+            continue()
+        endif()
+
         # Obtain name
         get_filename_component(_ext_lib_name ${_lib} NAME_WE)
         string(REPLACE lib "" _ext_lib_name ${_ext_lib_name})
@@ -219,20 +228,32 @@ function(ada_import_c_libraries #[[ ARGN ]])
         #message("XXXXXXXXXXXXXX ${_ext_lib_path}")
 
         set(_gpr clib_${_ext_safe_name}.gpr)
+
+        # Verify that project hasn't been already imported (gprbuild will complain otherwise)
+        unset(_found)
+        unset(_found CACHE)
+        find_file(_found ${_gpr}
+                ${ADA_GPR_DIRS})
+        if(NOT "${_found}" MATCHES ".*-NOTFOUND")
+            message(STATUS "C importing to Ada: skipping found ${_found}")
+            continue()
+        endif()
+
         configure_file(
                 ${ADA_RESOURCE_DIR}/external_c_lib.gpr.in
-                ${PROJECT_BINARY_DIR}/${_gpr})
+                ${CMAKE_INSTALL_PREFIX}/share/gpr/${_gpr})
+#                ${PROJECT_BINARY_DIR}/${_gpr})
 
-        install(FILES       ${PROJECT_BINARY_DIR}/${_gpr}
-                DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gprimport)
+#        install(FILES       ${PROJECT_BINARY_DIR}/${_gpr}
+#                DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gpr)
     endforeach()
 endfunction()
 
 # Make foreign msgs usable from the ada side, manually
 function(ada_import_msgs PKG_NAME)
 
-    if(${PKG_NAME} STREQUAL ${PROJECT_NAME})
-        message("Generating Ada binding for current package messages")
+    if("${PKG_NAME}" STREQUAL "${PROJECT_NAME}")
+        message(STATUS "Generating Ada binding for current package messages")
         set(_depends
                 ${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}__rosidl_typesupport_c.so
                 ${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}__rosidl_typesupport_introspection_c.so)
@@ -240,7 +261,7 @@ function(ada_import_msgs PKG_NAME)
         set(_pkg_lib_path ${CMAKE_INSTALL_PREFIX}/lib)
         set(_pkg_include_path ${CMAKE_INSTALL_PREFIX}/include)
     else()
-        message("Generating Ada binding for installed package ${PKG_NAME}")
+        message(STATUS "Generating Ada binding for installed package ${PKG_NAME}")
         find_package(${PKG_NAME} REQUIRED)
         ada_import_c_libraries(${${PKG_NAME}_LIBRARIES})
         ada_find_package_library_dir(_pkg_lib_path ${${PKG_NAME}_DIR})
@@ -248,11 +269,15 @@ function(ada_import_msgs PKG_NAME)
     endif()
 
     set(_pkg_name ${PKG_NAME})
+    set(_gpr ros2_typesupport_${PKG_NAME}.gpr)
 
     configure_file(
             ${ADA_RESOURCE_DIR}/msg_import.gpr.in
-            ${CMAKE_INSTALL_PREFIX}/share/gprimport/ros2_typesupport_${PKG_NAME}.gpr
-    )
+            ${CMAKE_INSTALL_PREFIX}/share/gpr/${_gpr})
+            #${PROJECT_BINARY_DIR}/${_gpr})
+
+    #install(FILES       ${PROJECT_BINARY_DIR}/${_gpr}
+    #        DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gpr/${_gpr})
 endfunction()
 
 function(ada_priv_expand_srcdir RESULT SRCDIR)

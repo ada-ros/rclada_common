@@ -1,10 +1,12 @@
 # Common prefix where built things end up (not installed, but for using)
 
-# Where to find .gpr files (folder list)
-set(ADA_GPR_DIRS "@ADA_GPR_DIRS@")
-# And, in dependent packages, add themselves for the future
-list(APPEND ADA_GPR_DIRS ${CMAKE_INSTALL_PREFIX}/share/gpr)
+# For dependent packages, add themselves for the future
+list(APPEND ADA_GPR_DIRS
+    @CMAKE_INSTALL_PREFIX@/share/gpr
+    ${CMAKE_INSTALL_PREFIX}/share/gpr)
+
 list(REMOVE_DUPLICATES ADA_GPR_DIRS)
+list(SORT ADA_GPR_DIRS)
 
 # Where to find template files (unique folder)
 set(ADA_RESOURCE_DIR "@ADA_RESOURCE_DIR@")
