@@ -12,6 +12,8 @@ function(ada_add_executables GPR_TARGET SRCDIR OUTDIR #[[ targets ]])
 
     ada_priv_expand_srcdir(_srcdir ${SRCDIR})
 
+    # message(STATUS "XXXXXXXXXXXXXXXXXX GPRS: ${ADA_GPR_DIRS}")
+
     # the target that builds the Ada project and true Ada executables
     add_custom_target(
             ${GPR_TARGET}
