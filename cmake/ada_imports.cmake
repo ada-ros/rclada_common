@@ -1,3 +1,18 @@
+# Import a headers-only library, or source files that do not require library linking
+function(ada_import_c_headers LIBNAME INCLUDE)
+    # LIBNAME: clib_libname.gpr
+    # INCLUDE: single include path
+
+    set(_ext_safe_name   ${LIBNAME})
+    set(_ext_lib_include ${INCLUDE})
+
+    set(_gpr clib_${_ext_safe_name}.gpr)
+
+    configure_file(
+            ${ADA_RESOURCE_DIR}/external_c_headers.gpr.in
+            ${CMAKE_INSTALL_PREFIX}/share/gprauto/${_gpr})
+endfunction()
+
 # Import an installed C library
 function(ada_import_c_libraries #[[ ARGN ]])
     # Expects a list of absolute paths to libs
@@ -43,7 +58,7 @@ function(ada_import_c_libraries #[[ ARGN ]])
 
         configure_file(
                 ${ADA_RESOURCE_DIR}/external_c_lib.gpr.in
-                ${CMAKE_INSTALL_PREFIX}/share/gpr/${_gpr})
+                ${CMAKE_INSTALL_PREFIX}/share/gprauto/${_gpr})
 #                ${PROJECT_BINARY_DIR}/${_gpr})
 
 #        install(FILES       ${PROJECT_BINARY_DIR}/${_gpr}
@@ -75,7 +90,7 @@ function(ada_import_msgs PKG_NAME)
 
     configure_file(
             ${ADA_RESOURCE_DIR}/msg_import.gpr.in
-            ${CMAKE_INSTALL_PREFIX}/share/gpr/${_gpr})
+            ${CMAKE_INSTALL_PREFIX}/share/gprauto/${_gpr})
             #${PROJECT_BINARY_DIR}/${_gpr})
 
     #install(FILES       ${PROJECT_BINARY_DIR}/${_gpr}

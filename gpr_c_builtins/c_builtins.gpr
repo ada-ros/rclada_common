@@ -14,7 +14,8 @@ project C_Builtins is
 
    package Compiler is
       for Switches ("ada") use ("-gnatVa", "-gnatwa", "-g", "-O2", "-gnata", "-gnat12", "-gnato", "-fstack-check");
-      for Switches ("*_h.ads") use ("-gnatwU");
+      for Switches ("*_h.ads") use ("-gnatwU",  -- Unused
+                                    "-gnatwG"); -- Unrecognized fiasco
    end Compiler;
 
    package Binder is

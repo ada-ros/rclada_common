@@ -1,7 +1,9 @@
 # For dependent packages, add themselves for the future
 list(APPEND ADA_GPR_DIRS
-    @CMAKE_INSTALL_PREFIX@/share/gpr
-    ${CMAKE_INSTALL_PREFIX}/share/gpr)
+        @CMAKE_INSTALL_PREFIX@/share/gpr
+        ${CMAKE_INSTALL_PREFIX}/share/gpr
+        @CMAKE_INSTALL_PREFIX@/share/gprauto
+        ${CMAKE_INSTALL_PREFIX}/share/gprauto)
 
 list(REMOVE_DUPLICATES ADA_GPR_DIRS)
 list(SORT ADA_GPR_DIRS)
