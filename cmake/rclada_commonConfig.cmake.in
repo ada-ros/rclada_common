@@ -12,7 +12,8 @@ list(SORT ADA_GPR_DIRS)
 set(ADA_RESOURCE_DIR "@ADA_RESOURCE_DIR@")
 
 # CMake functions for Ada packages
-include(@CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@/cmake/ada_project.cmake)
+list(APPEND CMAKE_MODULE_PATH @CMAKE_INSTALL_PREFIX@/share/@PROJECT_NAME@/cmake)
+include(ada_project)
 
 
 

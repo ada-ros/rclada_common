@@ -4,9 +4,7 @@ project(rclada_common VERSION 0.1.0)
 message(STATUS " ")
 message(STATUS "${PROJECT_NAME} version ${PROJECT_VERSION}")
 
-if(BUILD_TESTING)
-  # Silence a warning (?)
-endif()
+find_package(ament_cmake REQUIRED)
 
 # Detect builder and compiler
 
@@ -35,9 +33,12 @@ list(APPEND ADA_GPR_DIRS ${CMAKE_INSTALL_PREFIX}/share/gprimport)
 set(ADA_RESOURCE_DIR ${PROJECT_SOURCE_DIR}/resources)
 # Templates used for generated files
 
-# Include macros for Ada targets
+# Ada CMake functions
+install(DIRECTORY cmake
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME})
 
-include(cmake/ada_project.cmake)
+list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
+include(ada_project)
 
 # ada_begin_package()
 # We do not need this since paths have been just initialized
@@ -52,14 +53,4 @@ ada_generate_binding(
         /usr/include/${CMAKE_LIBRARY_ARCHITECTURE}/bits/stdint-uintn.h
         /usr/include/${CMAKE_LIBRARY_ARCHITECTURE}/bits/types.h)
 
-# This is the common file that gets included by anyone depending of rclada_common package
-install(FILES cmake/ada_project.cmake
-        DESTINATION ${CMAKE_INSTALL_PREFIX}/share/${PROJECT_NAME}/cmake)
-
 ada_end_package()
-
-#get_cmake_property(_variableNames VARIABLES)
-#list (SORT _variableNames)
-#foreach (_variableName ${_variableNames})
-#  message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()
