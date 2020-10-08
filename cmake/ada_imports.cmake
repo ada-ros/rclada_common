@@ -83,6 +83,11 @@ function(ada_import_msgs PKG_NAME)
         ada_import_c_libraries(${${PKG_NAME}_LIBRARIES})
         ada_find_package_library_dir(_pkg_lib_path ${${PKG_NAME}_DIR})
         ada_find_package_include_dir(_pkg_include_path ${${PKG_NAME}_DIR})
+        # Since Foxy, for some reason the introspection variant is not provided
+        # with the previous _LIBRARIES variable. THE FOLLOWING SHOULD ADD IT
+        # BUT IT'S BROKEN BECAUSE I CANNOT LOCATE THE LIBDIR WHERE ALL LIBS
+        # FSCKING ARE. I HATE CMAKE.
+        ada_import_c_libraries(${_pkg_lib_path}/lib${PKG_NAME}__rosidl_typesupport_introspection_c.so)
     endif()
 
     set(_pkg_name ${PKG_NAME})
