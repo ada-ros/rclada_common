@@ -1,5 +1,7 @@
 
 function(ada_add_executables GPR_TARGET SRCDIR OUTDIR #[[ targets ]])
+# No gpr file is passed as argument, only one must exist at SRCDIR
+# GPR_TARGET: a target name
 # SRCFOLDER: the path to the GPR-containing project
 # OUTFOLDER: relative path in SRCFOLDER where the real targets are built
 # TARGETS: each executable name built by this project, without path
