@@ -13,7 +13,7 @@ function(ada_add_executables GPR_TARGET SRCDIR OUTDIR #[[ targets ]])
     # the target that builds the Ada project and true Ada executables
     add_custom_target(
             ${GPR_TARGET}
-            # ALL
+            ALL # Always, to ensure changes are propagated. At worst, gprbuild will do nothing
             COMMAND_EXPAND_LISTS
             WORKING_DIRECTORY ${_srcdir}
             COMMAND gprbuild
