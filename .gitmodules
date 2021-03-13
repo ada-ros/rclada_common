@@ -1,0 +1,6 @@
+[submodule "gpr_cstrings"]
+	path = gpr_cstrings
+	url = https://github.com/mosteo/cstrings.git
+[submodule "gpr_aaa"]
+	path = gpr_aaa
+	url = https://github.com/mosteo/aaa.git

@@ -10,7 +10,7 @@ function(ada_import_c_headers LIBNAME INCLUDE)
 
     configure_file(
             ${ADA_RESOURCE_DIR}/external_c_headers.gpr.in
-            ${CMAKE_INSTALL_PREFIX}/share/gprauto/${_gpr})
+            ${CMAKE_INSTALL_PREFIX}/share/gpr/${_gpr})
 endfunction()
 
 # Import an installed C library
@@ -25,7 +25,9 @@ function(ada_import_c_libraries #[[ ARGN ]])
         message(STATUS "Importing C lib for Ada: ${_lib}")
 
         if (NOT (${_lib} MATCHES ".*[.]so" OR ${_lib} MATCHES ".*[.]a"))
-            message(STATUS "!!! !!! Bad C library: ${_lib}")
+            if (NOT (${_lib} MATCHES ".*::.*")) # No need to warn about the modern CMake alternate notation
+                message(STATUS "!!! !!! Bad C library: ${_lib}")
+            endif()
             continue()
         endif()
 
@@ -41,9 +43,6 @@ function(ada_import_c_libraries #[[ ARGN ]])
         get_filename_component(_ext_lib_include ${_ext_lib_path} DIRECTORY)
         set(_ext_lib_include ${_ext_lib_include}/include)
 
-        #message("XXXXXXXXXXXXXX ${_ext_lib_name}")
-        #message("XXXXXXXXXXXXXX ${_ext_lib_path}")
-
         set(_gpr clib_${_ext_safe_name}.gpr)
 
         # Verify that project hasn't been already imported (gprbuild will complain otherwise)
@@ -58,16 +57,12 @@ function(ada_import_c_libraries #[[ ARGN ]])
 
         configure_file(
                 ${ADA_RESOURCE_DIR}/external_c_lib.gpr.in
-                ${CMAKE_INSTALL_PREFIX}/share/gprauto/${_gpr})
-#                ${PROJECT_BINARY_DIR}/${_gpr})
-
-#        install(FILES       ${PROJECT_BINARY_DIR}/${_gpr}
-#                DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gpr)
+                ${CMAKE_INSTALL_PREFIX}/share/gpr/${_gpr})
     endforeach()
 endfunction()
 
 # Make foreign msgs usable from the ada side, manually
-function(ada_import_msgs PKG_NAME)
+function(ada_import_interfaces PKG_NAME)
 
     if("${PKG_NAME}" STREQUAL "${PROJECT_NAME}")
         message(STATUS "Generating Ada binding for current package messages")
@@ -95,9 +90,5 @@ function(ada_import_msgs PKG_NAME)
 
     configure_file(
             ${ADA_RESOURCE_DIR}/msg_import.gpr.in
-            ${CMAKE_INSTALL_PREFIX}/share/gprauto/${_gpr})
-            #${PROJECT_BINARY_DIR}/${_gpr})
-
-    #install(FILES       ${PROJECT_BINARY_DIR}/${_gpr}
-    #        DESTINATION ${CMAKE_INSTALL_PREFIX}/share/gpr/${_gpr})
+            ${CMAKE_INSTALL_PREFIX}/share/gpr/${_gpr})
 endfunction()

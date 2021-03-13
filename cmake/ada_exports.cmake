@@ -84,14 +84,17 @@ function(ada_add_library TARGET SRCDIR GPRFILE)
             # build
             COMMAND gprbuild
                 -p -j0 -P ${_srcdir}/${GPRFILE}
-               "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"
+                -aP ${CMAKE_INSTALL_PREFIX}/share/gpr       # needed if we are using exports from this same package
+               "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"            # needed for exports in other packages
                 --relocate-build-tree=${PROJECT_BINARY_DIR}
 
             COMMENT "Installing ${GPRFILE} in ${CMAKE_INSTALL_PREFIX}"
             # install
             COMMAND gprinstall
+                --install-name=${TARGET}
                 -f -m -p -P ${_srcdir}/${GPRFILE}
-                "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"
+                -aP ${CMAKE_INSTALL_PREFIX}/share/gpr       # needed if we are using exports from this same package
+               "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"            # needed for exports in other packages
                 --relocate-build-tree=${PROJECT_BINARY_DIR}
                 --prefix=${CMAKE_INSTALL_PREFIX}
 
@@ -118,7 +121,7 @@ function(ada_generate_binding TARGET SRCDIR GPRFILE INCLUDE #[[ ARGN ]])
 
     add_custom_target(${TARGET}
         ALL
-        DEPENDS ${_gen_flag}
+        DEPENDS ${_gen_flag} ${ARGN}
         COMMAND_EXPAND_LISTS
 
         COMMENT "Building ${GPRFILE} Ada project"

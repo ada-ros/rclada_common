@@ -1,6 +1,6 @@
 function(ada_begin_package)
     message(STATUS " ")
-    message(STATUS "${PROJECT_NAME} version ${PROJECT_VERSION}")    
+    message(STATUS "${PROJECT_NAME} version ${PROJECT_VERSION}")
 endfunction()
 
 
@@ -13,12 +13,12 @@ function(ada_end_package)
 
     if(NOT "${_conf_file_in}" STREQUAL "")
         message(STATUS "Processing ${_conf_file_in} as part of ${PROJECT_NAME} closing config")
-        list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS ${_conf_file_in}) # The file is configured by ament_package()        
+        list(APPEND ${PROJECT_NAME}_CONFIG_EXTRAS ${_conf_file_in}) # The file is configured by ament_package()
     endif()
 
     find_package(ament_cmake REQUIRED)
 
-    # When we close the Ada context we include at least the AdaConfig file that 
+    # When we close the Ada context we include at least the AdaConfig file that
     # builds the list of dirs for GPR, besides any other info the package exports
     ament_package(CONFIG_EXTRAS ${ADA_RESOURCE_DIR}/AdaConfig.cmake.in)
 

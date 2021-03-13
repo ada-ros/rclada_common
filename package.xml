@@ -7,6 +7,8 @@
   <maintainer email="amosteo@unizar.es">Alejandro R Mosteo</maintainer>
   <license>LGPLv3</license>
 
+  <depend>ament_index_cpp</depend>
+
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>gprbuild</buildtool_depend>
   <buildtool_depend>gnat</buildtool_depend>
