@@ -1,7 +1,7 @@
 
-function(ada_add_executables GPR_TARGET SRCDIR OUTDIR #[[ targets ]])
+function(ada_add_executables TARGET SRCDIR OUTDIR #[[ targets ]])
 # No gpr file is passed as argument, only one must exist at SRCDIR
-# GPR_TARGET: a target name
+# TARGET: a target name
 # SRCFOLDER: the path to the GPR-containing project
 # OUTFOLDER: relative path in SRCFOLDER where the real targets are built
 # TARGETS: each executable name built by this project, without path
@@ -12,7 +12,7 @@ function(ada_add_executables GPR_TARGET SRCDIR OUTDIR #[[ targets ]])
 
     # the target that builds the Ada project and true Ada executables
     add_custom_target(
-            ${GPR_TARGET}
+            ${TARGET}
             ALL # Always, to ensure changes are propagated. At worst, gprbuild will do nothing
             COMMAND_EXPAND_LISTS
             WORKING_DIRECTORY ${_srcdir}
@@ -21,34 +21,73 @@ function(ada_add_executables GPR_TARGET SRCDIR OUTDIR #[[ targets ]])
                 -p -j0
                 --relocate-build-tree=${PROJECT_BINARY_DIR}
 
-            COMMENT "${GPR_TARGET} Ada project build target created"
+            COMMENT "${TARGET} Ada project build target created"
     )
 
+    # This target depends on any messages defined in this same package, if any
+    if (TARGET ada_interfaces)
+        add_dependencies(${TARGET} ada_interfaces)
+    endif()
+
     # Fake targets (to be indexed by autocompletion) and its replacement
-    foreach(TARGET ${ARGN})
+    foreach(EXEC ${ARGN})
         # Fake exec to be able to install an executable target
-        add_executable(${TARGET} ${ADA_RESOURCE_DIR}/rclada_fake_target.c)
+        add_executable(${EXEC} ${ADA_RESOURCE_DIR}/rclada_fake_target.c)
 
         # Copy each executable in place
         add_custom_command(
-                TARGET ${TARGET}
+                TARGET ${EXEC}
                 POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/${TARGET}
+                COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/${EXEC}
                 COMMAND ${CMAKE_COMMAND} -E copy
-                    ${PROJECT_BINARY_DIR}/${OUTDIR}/${TARGET}
-                    ${PROJECT_BINARY_DIR}/${TARGET}
-                COMMENT "${TARGET} Ada binary put in place"
+                    ${PROJECT_BINARY_DIR}/${OUTDIR}/${EXEC}
+                    ${PROJECT_BINARY_DIR}/${EXEC}
+                COMMENT "${EXEC} Ada binary put in place"
         )
 
         # ensure the Ada project is built before so the post-command works
         # make the copy in place after building
-        add_dependencies(${TARGET} ${GPR_TARGET})
+        add_dependencies(${EXEC} ${TARGET})
 
         # must go into "lib" or ros bash completion misses it (duh)
-        install(TARGETS     ${TARGET}
+        install(TARGETS     ${EXEC}
                 DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/)
     endforeach()
 
+endfunction()
+
+
+# Generates the Ada and rest of languages messages and sh¡t. Since I was unable to understand
+# the CMake macros that do all this or even register successfully the generator, all is redone for Ada.
+# [iface files...] [DEPENDENCIES [packages used in iface files...]]
+function(ada_add_interfaces)
+    set(multiValueArgs DEPENDENCIES)
+    cmake_parse_arguments(LOCAL "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
+
+    set(_files ${LOCAL_UNPARSED_ARGUMENTS})
+
+    rosidl_generate_interfaces(${PROJECT_NAME}
+        ${_files}
+        DEPENDENCIES
+        ${LOCAL_DEPENDENCIES})
+
+    find_package(rosidl_generator_ada REQUIRED)
+
+    # Add a target for the generator with the arguments
+    add_custom_command(
+        OUTPUT ada_ifaces.stamp # Never created, so regenerated every time until I do smthg about this
+        COMMAND echo "Running Ada generator for ${LOCAL_UNPARSED_ARGUMENTS}"
+        COMMAND ${ADA_GENERATOR} ${_files}
+        DEPENDS ${PROJECT_NAME} ${_files} # so the C ones are generated first
+        VERBATIM
+    )
+    
+    # Avoid multiple generations by grouping the generator command under a common custom target
+    add_custom_target(ada_interfaces ALL
+        COMMENT "Custom target for ADA GENERATOR"
+        DEPENDS ada_ifaces.stamp
+        VERBATIM
+    )
 endfunction()
 
 
@@ -76,6 +115,11 @@ function(ada_add_library TARGET SRCDIR GPRFILE)
 
             COMMENT "${GPRFILE} (${_srcdir}) installation complete"
             )
+
+    # This target depends on any messages defined in this same package, if any
+    if (TARGET ada_interfaces)
+        add_dependencies(${TARGET} ada_interfaces)
+    endif()
 endfunction()
 
 
