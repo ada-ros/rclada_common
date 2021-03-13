@@ -29,28 +29,10 @@ function(ada_add_executables TARGET SRCDIR OUTDIR #[[ targets ]])
         add_dependencies(${TARGET} ada_interfaces)
     endif()
 
-    # Fake targets (to be indexed by autocompletion) and its replacement
+    # Install the execs produced by this project
     foreach(EXEC ${ARGN})
-        # Fake exec to be able to install an executable target
-        add_executable(${EXEC} ${ADA_RESOURCE_DIR}/rclada_fake_target.c)
-
-        # Copy each executable in place
-        add_custom_command(
-                TARGET ${EXEC}
-                POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E remove -f ${PROJECT_BINARY_DIR}/${EXEC}
-                COMMAND ${CMAKE_COMMAND} -E copy
-                    ${PROJECT_BINARY_DIR}/${OUTDIR}/${EXEC}
-                    ${PROJECT_BINARY_DIR}/${EXEC}
-                COMMENT "${EXEC} Ada binary put in place"
-        )
-
-        # ensure the Ada project is built before so the post-command works
-        # make the copy in place after building
-        add_dependencies(${EXEC} ${TARGET})
-
         # must go into "lib" or ros bash completion misses it (duh)
-        install(TARGETS     ${EXEC}
+        install(PROGRAMS    ${PROJECT_BINARY_DIR}/${OUTDIR}/${EXEC}
                 DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/${PROJECT_NAME}/)
     endforeach()
 
@@ -81,7 +63,7 @@ function(ada_add_interfaces)
         DEPENDS ${PROJECT_NAME} ${_files} # so the C ones are generated first
         VERBATIM
     )
-    
+
     # Avoid multiple generations by grouping the generator command under a common custom target
     add_custom_target(ada_interfaces ALL
         COMMENT "Custom target for ADA GENERATOR"
