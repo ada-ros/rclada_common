@@ -1,6 +1,7 @@
 with AAA.Strings;
 with Ada.Directories;
 with C_Strings;
+with Interfaces.C.Extensions;
 
 package body Ament.Index is
 
@@ -8,14 +9,21 @@ package body Ament.Index is
    -- Find_Package --
    ------------------
 
-   function Find_Package (Name : String) return String
+   function Find_Package (Name   : String;
+                          Silent : Boolean := False) return String
    is
-      function Query (Pack : C_Strings.Chars_Ptr) return C_Strings.Chars_Ptr
+      function Query (Pack   : C_Strings.Chars_Ptr;
+                      Silent : Interfaces.C.Extensions.bool)
+                      return C_Strings.Chars_Ptr
         with Import, Convention => C,
         External_Name => "rosidl_ada_find_package_install_path";
    begin
       return
-        C_Strings.Value (Query (C_Strings.To_C (Name).To_Ptr), Free => True);
+        C_Strings.Value
+          (Query
+             (C_Strings.To_C (Name).To_Ptr,
+              Interfaces.C.Extensions.bool (Silent)),
+           Free => True);
    end Find_Package;
 
    ------------------
@@ -30,7 +38,7 @@ package body Ament.Index is
       use Ada.Directories;
 
       Pack   : constant String := Tail (Head (Name, "__"), "lib");
-      Prefix : constant String := Find_Package (Pack);
+      Prefix : constant String := Find_Package (Pack, Silent => Local);
       Cwd    : constant String := Current_Directory;
    begin
       if Prefix /= "" then

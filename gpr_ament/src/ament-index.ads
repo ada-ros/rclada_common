@@ -8,8 +8,10 @@ package Ament.Index is
    --  Local, look for it also under current directory. (The generator gets
    --  called on the same build dir).
 
-   function Find_Package (Name : String) return String;
+   function Find_Package (Name   : String;
+                          Silent : Boolean := False) return String;
    --  Finds where a package is installed. This will fail to locate the package
-   --  currently being built! Returns "" when not found
+   --  currently being built! Returns "" when not found. Will complain to
+   --  stderr if not Silent.
 
 end Ament.Index;
