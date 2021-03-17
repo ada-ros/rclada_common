@@ -1,7 +1,4 @@
 [submodule "gpr_cstrings"]
-	path = gpr_ament/cstrings
-	url = https://github.com/mosteo/cstrings.git
-[submodule "gpr_cstrings"]
 	path = gpr_cstrings
 	url = https://github.com/mosteo/cstrings.git
 [submodule "gpr_aaa"]

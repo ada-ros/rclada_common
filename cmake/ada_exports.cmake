@@ -60,7 +60,7 @@ function(ada_add_interfaces)
         OUTPUT ada_ifaces.stamp # Never created, so regenerated every time until I do smthg about this
         COMMAND echo "Running Ada generator for ${LOCAL_UNPARSED_ARGUMENTS}"
         COMMAND ${ADA_GENERATOR} ${_files}
-        DEPENDS ${PROJECT_NAME} ${_files} # so the C ones are generated first
+        DEPENDS ${PROJECT_NAME} ${_files} # depend on the package itself so the C ones are generated first
         VERBATIM
     )
 
@@ -70,6 +70,12 @@ function(ada_add_interfaces)
         DEPENDS ada_ifaces.stamp
         VERBATIM
     )
+
+    ada_add_library(
+        ada_interfaces_gpr
+        "${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_ada"
+        "ros2_interfaces_${PROJECT_NAME}")
+    add_dependencies(ada_interfaces_gpr ada_interfaces)
 endfunction()
 
 
