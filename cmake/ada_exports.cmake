@@ -25,8 +25,8 @@ function(ada_add_executables TARGET SRCDIR OUTDIR #[[ targets ]])
     )
 
     # This target depends on any messages defined in this same package, if any
-    if (TARGET ada_interfaces)
-        add_dependencies(${TARGET} ada_interfaces)
+    if (TARGET ada_interfaces_gpr)
+        add_dependencies(${TARGET} ada_interfaces_gpr)
     endif()
 
     # Install the execs produced by this project
@@ -108,8 +108,8 @@ function(ada_add_library TARGET SRCDIR GPRFILE)
             )
 
     # This target depends on any messages defined in this same package, if any
-    if (TARGET ada_interfaces)
-        add_dependencies(${TARGET} ada_interfaces)
+    if (TARGET ada_interfaces_gpr)
+        add_dependencies(${TARGET} ada_interfaces_gpr)
     endif()
 endfunction()
 
