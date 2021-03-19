@@ -1,5 +1,6 @@
 with AAA.Strings;
 with Ada.Directories;
+with Ada.Text_IO; use Ada.Text_IO;
 with C_Strings;
 with Interfaces.C.Extensions;
 
@@ -49,6 +50,11 @@ package body Ament.Index is
 
       if Local and then Exists (Compose (Cwd, Name)) then
          return Compose (Cwd, Name);
+      end if;
+
+      if Local and then Name /= "" then
+         Put_Line ("WARNING: ament-index.adb:56, could not locate "
+                   & Name & " when cwd=" & Current_Directory);
       end if;
 
       return "";
