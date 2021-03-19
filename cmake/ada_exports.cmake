@@ -59,6 +59,7 @@ function(ada_add_interfaces)
     add_custom_command(
         OUTPUT ada_ifaces.stamp # Never created, so regenerated every time until I do smthg about this
         COMMAND echo "Running Ada generator for ${LOCAL_UNPARSED_ARGUMENTS}"
+        COMMAND ls -l .
         COMMAND ${ADA_GENERATOR} ${_files}
         DEPENDS ${PROJECT_NAME} ${_files} # depend on the package itself so the C ones are generated first
         VERBATIM
