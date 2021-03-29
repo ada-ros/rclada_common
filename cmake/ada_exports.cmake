@@ -43,15 +43,17 @@ function(ada_add_library TARGET SRCDIR GPRFILE)
             ALL
             COMMAND_EXPAND_LISTS
 
-            COMMENT "Building ${GPRFILE} from ${SRCDIR}"
+            COMMAND echo "Building ${GPRFILE} from ${SRCDIR}"
             # build
             COMMAND gprbuild
                 -p -j0 -P ${_srcdir}/${GPRFILE}
                 -aP ${CMAKE_INSTALL_PREFIX}/share/gpr       # needed if we are using exports from this same package
                "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"            # needed for exports in other packages
                 --relocate-build-tree=${PROJECT_BINARY_DIR}
+                -cargs -I/opt/ros/foxy/include              # SHOULD NOT BE NEEDED and it's not needed normally. Only
+                                                            # the github actions fail without this (???)
 
-            COMMENT "Installing ${GPRFILE} in ${CMAKE_INSTALL_PREFIX}"
+            COMMAND echo "Installing ${GPRFILE} in ${CMAKE_INSTALL_PREFIX}"
             # install
             COMMAND gprinstall
                 --install-name=${TARGET}
@@ -61,7 +63,7 @@ function(ada_add_library TARGET SRCDIR GPRFILE)
                 --relocate-build-tree=${PROJECT_BINARY_DIR}
                 --prefix=${CMAKE_INSTALL_PREFIX}
 
-            COMMENT "${GPRFILE} (${_srcdir}) installation complete"
+            COMMAND echo "${GPRFILE} installation complete at ${_srcdir}"
             )
 
     # This target depends on any messages defined in this same package, if any
