@@ -7,7 +7,7 @@ library project clib_@_ext_safe_name@ is
    for Languages use ("C", "C++");
    for Library_Name use "@_ext_lib_name@";      -- minus lib*.{a,so}
    for Library_Dir use "@_ext_lib_path@";       -- /path/to/lib
-   for Source_Dirs use ("@_ext_lib_include@");  -- where to find relateds *.h
+   for Source_Dirs use ("@_ext_lib_include@", "/opt/ros/foxy/include");  -- where to find relateds *.h
    for Library_Kind use "dynamic";
 
    package Linker is
