@@ -62,33 +62,44 @@ function(ada_import_c_libraries #[[ ARGN ]])
 endfunction()
 
 # Make foreign msgs usable from the ada side, manually
-function(ada_import_interfaces PKG_NAME)
+function(ada_import_interfaces #[[ ARGN ]])
 
-    if("${PKG_NAME}" STREQUAL "${PROJECT_NAME}")
-        message(STATUS "Generating Ada binding for current package messages")
-        set(_depends
-                ${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}__rosidl_typesupport_c.so
-                ${CMAKE_INSTALL_PREFIX}/lib/lib${PROJECT_NAME}__rosidl_typesupport_introspection_c.so)
-        ada_import_c_libraries(${_depends})
-        set(_pkg_lib_path ${CMAKE_INSTALL_PREFIX}/lib)
-        set(_pkg_include_path ${CMAKE_INSTALL_PREFIX}/include)
-    else()
-        message(STATUS "Generating Ada binding for installed package ${PKG_NAME}")
-        find_package(${PKG_NAME} REQUIRED)
-        ada_import_c_libraries(${${PKG_NAME}_LIBRARIES})
-        ada_find_package_library_dir(_pkg_lib_path ${${PKG_NAME}_DIR})
-        ada_find_package_include_dir(_pkg_include_path ${${PKG_NAME}_DIR})
-        # Since Foxy, for some reason the introspection variant is not provided
-        # with the previous _LIBRARIES variable. THE FOLLOWING SHOULD ADD IT
-        # BUT IT'S BROKEN BECAUSE I CANNOT LOCATE THE LIBDIR WHERE ALL LIBS
-        # FSCKING ARE. I HATE CMAKE.
-        ada_import_c_libraries(${_pkg_lib_path}/lib${PKG_NAME}__rosidl_typesupport_introspection_c.so)
+    set(PKG_NAMES ${ARGN})
+
+    find_package(rosidl_generator_ada REQUIRED) # import the generator
+
+    # Depending on whether we are importing our own messages, we must add this dependency or not.
+    # Something is amiss here because if we aren't generating messages, a circularity appears, when
+    # it seems it should be the other way around.
+
+    if (${PROJECT_NAME} IN_LIST PKG_NAMES)
+        set(_depends ${PROJECT_NAME}) # depend on the package C messages, which are under the package name target
     endif()
 
-    set(_pkg_name ${PKG_NAME})
-    set(_gpr ros2_typesupport_${PKG_NAME}.gpr)
+    # Add a target for the generator with the arguments
 
-    configure_file(
-            ${ADA_RESOURCE_DIR}/msg_import.gpr.in
-            ${CMAKE_INSTALL_PREFIX}/share/gpr/${_gpr})
+    add_custom_command(
+        OUTPUT ada_ifaces.stamp # Never created, so regenerated every time until I do smthg about this
+        COMMAND echo "Running Ada generator for ${PKG_NAMES}"
+        COMMAND ${ADA_GENERATOR}
+            "--import-pkg=$<JOIN:${PKG_NAMES},,>"
+            "--from-pkg=${PROJECT_NAME}"
+            "--current-src=${PROJECT_SOURCE_DIR}"
+        DEPENDS ${_depends}
+        VERBATIM
+    )
+
+    # Avoid multiple generations by grouping the generator command under a common custom target
+    add_custom_target(ada_interfaces_internal ALL
+        COMMENT "Custom target for ADA GENERATOR"
+        DEPENDS ada_ifaces.stamp
+        VERBATIM
+    )
+
+    ada_add_library(
+        ada_interfaces_gpr
+        "${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_ada"
+        "ros2_interfaces_${PROJECT_NAME}")
+    add_dependencies(ada_interfaces_gpr ada_interfaces_internal)
+
 endfunction()

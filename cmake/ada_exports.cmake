@@ -8,8 +8,6 @@ function(ada_add_executables TARGET SRCDIR OUTDIR #[[ targets ]])
 
     ada_priv_expand_srcdir(_srcdir ${SRCDIR})
 
-    # message(STATUS "XXXXXXXXXXXXXXXXXX GPRS: ${ADA_GPR_DIRS}")
-
     # the target that builds the Ada project and true Ada executables
     add_custom_target(
             ${TARGET}
@@ -37,47 +35,6 @@ function(ada_add_executables TARGET SRCDIR OUTDIR #[[ targets ]])
     endforeach()
 
 endfunction()
-
-
-# Generates the Ada and rest of languages messages and sh¡t. Since I was unable to understand
-# the CMake macros that do all this or even register successfully the generator, all is redone for Ada.
-# [iface files...] [DEPENDENCIES [packages used in iface files...]]
-function(ada_add_interfaces)
-    set(multiValueArgs DEPENDENCIES)
-    cmake_parse_arguments(LOCAL "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN} )
-
-    set(_files ${LOCAL_UNPARSED_ARGUMENTS})
-
-    rosidl_generate_interfaces(${PROJECT_NAME}
-        ${_files}
-        DEPENDENCIES
-        ${LOCAL_DEPENDENCIES})
-
-    find_package(rosidl_generator_ada REQUIRED)
-
-    # Add a target for the generator with the arguments
-    add_custom_command(
-        OUTPUT ada_ifaces.stamp # Never created, so regenerated every time until I do smthg about this
-        COMMAND echo "Running Ada generator for ${LOCAL_UNPARSED_ARGUMENTS}"
-        COMMAND ${ADA_GENERATOR} ${_files}
-        DEPENDS ${PROJECT_NAME} ${_files} # depend on the package itself so the C ones are generated first
-        VERBATIM
-    )
-
-    # Avoid multiple generations by grouping the generator command under a common custom target
-    add_custom_target(ada_interfaces ALL
-        COMMENT "Custom target for ADA GENERATOR"
-        DEPENDS ada_ifaces.stamp
-        VERBATIM
-    )
-
-    ada_add_library(
-        ada_interfaces_gpr
-        "${CMAKE_CURRENT_BINARY_DIR}/rosidl_generator_ada"
-        "ros2_interfaces_${PROJECT_NAME}")
-    add_dependencies(ada_interfaces_gpr ada_interfaces)
-endfunction()
-
 
 function(ada_add_library TARGET SRCDIR GPRFILE)
     ada_priv_expand_srcdir(_srcdir ${SRCDIR})
