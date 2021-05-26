@@ -33,8 +33,12 @@ function(ada_import_c_libraries #[[ ARGN ]])
 
         # Obtain name
         get_filename_component(_ext_lib_name ${_lib} NAME_WE)
-        string(REPLACE lib "" _ext_lib_name ${_ext_lib_name})
+        # Remove leading lib from libBLAH
+        string(SUBSTRING ${_ext_lib_name} 3 -1 _ext_lib_name)
         string(REPLACE "__" "_" _ext_safe_name ${_ext_lib_name})
+        string(REPLACE "-" "_" _ext_safe_name ${_ext_safe_name})
+
+        message(STATUS "Generating GPR clib_${_ext_safe_name}.gpr for LIB ${_lib}")
 
         # Obtain path
         get_filename_component(_ext_lib_path ${_lib} DIRECTORY)
