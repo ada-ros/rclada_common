@@ -99,6 +99,7 @@ function(ada_generate_binding TARGET SRCDIR GPRFILE INCLUDE #[[ ARGN ]])
             -fdump-ada-spec-slim
             -C
             "$<$<BOOL:${INCLUDE}>:-I$<JOIN:${INCLUDE},;-I>>"
+            -I/opt/ros/foxy/include    # Needed for tf2 lib compilation
             ${ARGN}
 
             COMMAND touch ${_gen_flag}
@@ -117,6 +118,8 @@ function(ada_generate_binding TARGET SRCDIR GPRFILE INCLUDE #[[ ARGN ]])
             "-aP$<JOIN:${ADA_GPR_DIRS},;-aP>"
             --relocate-build-tree=${PROJECT_BINARY_DIR}
             -cargs "$<$<BOOL:${INCLUDE}>:-I$<JOIN:${INCLUDE},;-I>>"
+            -cargs -I/opt/ros/foxy/include              # SHOULD NOT BE NEEDED and it's not needed normally. Only
+                                                            # the github actions fail without this (???)
 
         # This might need to be separated into a custom script, since it now runs at build time
         COMMENT "Installing ${GPRFILE} Ada project"
