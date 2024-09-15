@@ -1,5 +1,7 @@
 pragma Ada_2012;
+
 pragma Style_Checks (Off);
+pragma Warnings (Off, "-gnatwu");
 
 with Interfaces.C; use Interfaces.C;
 with System;
@@ -8,7 +10,7 @@ with Interfaces.C.Strings;
 package x86_64_linux_gnu_bits_types_h is
 
   -- bits/types.h -- definitions of __*_t types underlying *_t types.
-  --   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+  --   Copyright (C) 2002-2024 Free Software Foundation, Inc.
   --   This file is part of the GNU C Library.
   --   The GNU C Library is free software; you can redistribute it and/or
   --   modify it under the terms of the GNU Lesser General Public
@@ -141,11 +143,9 @@ package x86_64_linux_gnu_bits_types_h is
    subtype uu_pid_t is int;  -- /usr/include/x86_64-linux-gnu/bits/types.h:154
 
   -- Type of file system IDs.   
-   --  skipped anonymous struct anon_0
-
-   type uu_fsid_t_uu_val_array is array (0 .. 1) of aliased int;
+   type anon_array1053 is array (0 .. 1) of aliased int;
    type uu_fsid_t is record
-      uu_val : aliased uu_fsid_t_uu_val_array;  -- /usr/include/x86_64-linux-gnu/bits/types.h:155
+      uu_val : aliased anon_array1053;  -- /usr/include/x86_64-linux-gnu/bits/types.h:155
    end record
    with Convention => C_Pass_By_Copy;  -- /usr/include/x86_64-linux-gnu/bits/types.h:155
 
@@ -170,71 +170,76 @@ package x86_64_linux_gnu_bits_types_h is
   -- Signed count of microseconds.   
    subtype uu_suseconds_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:162
 
+   subtype uu_suseconds64_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:163
+
   -- The type of a disk address.   
-   subtype uu_daddr_t is int;  -- /usr/include/x86_64-linux-gnu/bits/types.h:164
+   subtype uu_daddr_t is int;  -- /usr/include/x86_64-linux-gnu/bits/types.h:165
 
   -- Type of an IPC key.   
-   subtype uu_key_t is int;  -- /usr/include/x86_64-linux-gnu/bits/types.h:165
+   subtype uu_key_t is int;  -- /usr/include/x86_64-linux-gnu/bits/types.h:166
 
   -- Clock ID used in clock and timer functions.   
-   subtype uu_clockid_t is int;  -- /usr/include/x86_64-linux-gnu/bits/types.h:168
+   subtype uu_clockid_t is int;  -- /usr/include/x86_64-linux-gnu/bits/types.h:169
 
   -- Timer ID returned by `timer_create'.   
-   type uu_timer_t is new System.Address;  -- /usr/include/x86_64-linux-gnu/bits/types.h:171
+   type uu_timer_t is new System.Address;  -- /usr/include/x86_64-linux-gnu/bits/types.h:172
 
   -- Type to represent block size.   
-   subtype uu_blksize_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:174
+   subtype uu_blksize_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:175
 
   -- Types from the Large File Support interface.   
   -- Type to count number of disk blocks.   
-   subtype uu_blkcnt_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:179
+   subtype uu_blkcnt_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:180
 
-   subtype uu_blkcnt64_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:180
+   subtype uu_blkcnt64_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:181
 
   -- Type to count file system blocks.   
-   subtype uu_fsblkcnt_t is unsigned_long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:183
+   subtype uu_fsblkcnt_t is unsigned_long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:184
 
-   subtype uu_fsblkcnt64_t is unsigned_long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:184
+   subtype uu_fsblkcnt64_t is unsigned_long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:185
 
   -- Type to count file system nodes.   
-   subtype uu_fsfilcnt_t is unsigned_long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:187
+   subtype uu_fsfilcnt_t is unsigned_long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:188
 
-   subtype uu_fsfilcnt64_t is unsigned_long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:188
+   subtype uu_fsfilcnt64_t is unsigned_long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:189
 
   -- Type of miscellaneous file system fields.   
-   subtype uu_fsword_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:191
+   subtype uu_fsword_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:192
 
   -- Type of a byte count, or error.   
-   subtype uu_ssize_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:193
+   subtype uu_ssize_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:194
 
   -- Signed long type used in system calls.   
-   subtype uu_syscall_slong_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:196
+   subtype uu_syscall_slong_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:197
 
   -- Unsigned long type used in system calls.   
-   subtype uu_syscall_ulong_t is unsigned_long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:198
+   subtype uu_syscall_ulong_t is unsigned_long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:199
 
   -- These few don't really vary by system, they always correspond
   --   to one of the other defined types.   
 
   -- Type of file sizes and offsets (LFS).   
-   subtype uu_loff_t is uu_off64_t;  -- /usr/include/x86_64-linux-gnu/bits/types.h:202
+   subtype uu_loff_t is uu_off64_t;  -- /usr/include/x86_64-linux-gnu/bits/types.h:203
 
-   type uu_caddr_t is new Interfaces.C.Strings.chars_ptr;  -- /usr/include/x86_64-linux-gnu/bits/types.h:203
+   type uu_caddr_t is new Interfaces.C.Strings.chars_ptr;  -- /usr/include/x86_64-linux-gnu/bits/types.h:204
 
   -- Duplicates info from stdint.h but this is used in unistd.h.   
-   subtype uu_intptr_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:206
+   subtype uu_intptr_t is long;  -- /usr/include/x86_64-linux-gnu/bits/types.h:207
 
   -- Duplicate info from sys/socket.h.   
-   subtype uu_socklen_t is unsigned;  -- /usr/include/x86_64-linux-gnu/bits/types.h:209
+   subtype uu_socklen_t is unsigned;  -- /usr/include/x86_64-linux-gnu/bits/types.h:210
 
   -- C99: An integer type that can be accessed as an atomic entity,
   --   even in the presence of asynchronous interrupts.
   --   It is not currently necessary for this to be machine-specific.   
 
-   subtype uu_sig_atomic_t is int;  -- /usr/include/x86_64-linux-gnu/bits/types.h:214
+   subtype uu_sig_atomic_t is int;  -- /usr/include/x86_64-linux-gnu/bits/types.h:215
 
   -- Seconds since the Epoch, visible to user code when time_t is too
   --   narrow only for consistency with the old way of widening too-narrow
   --   types.  User code should never use __time64_t.   
 
 end x86_64_linux_gnu_bits_types_h;
+
+pragma Style_Checks (On);
+pragma Warnings (On, "-gnatwu");

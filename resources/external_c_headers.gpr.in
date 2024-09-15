@@ -10,6 +10,7 @@ project clib_@_ext_safe_name@ is
 
    for Languages use ("C");
    for Source_Dirs use ("@_ext_lib_include@");  -- where to find relateds *.h
+
    --  Recursive search (**) cannot be used to avert "no sources" warning because
    --    in merged installs it causes duplicate inclusions
 

@@ -4,3 +4,6 @@
 [submodule "gpr_aaa"]
 	path = gpr_aaa
 	url = https://github.com/mosteo/aaa.git
+[submodule "gpr_umwi"]
+	path = gpr_umwi
+	url = https://github.com/mosteo/umwi

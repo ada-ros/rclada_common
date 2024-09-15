@@ -40,6 +40,13 @@ include(ada_project)
 # ada_begin_package()
 # We do not need this since paths have been just initialized
 
+# ada_add_executables(
+#   gpr_header_name_fixer
+#   gpr_header_name_fixer
+#   bin
+#   header_name_fixer
+# )
+
 # Generate some common C headers used by rosidl, rclada...
 ada_generate_binding(
         ada_specs_common
@@ -47,8 +54,17 @@ ada_generate_binding(
         c_builtins.gpr
         ""
         /usr/include/${CMAKE_LIBRARY_ARCHITECTURE}/bits/stdint-intn.h
+        /usr/include/${CMAKE_LIBRARY_ARCHITECTURE}/bits/stdint-least.h
         /usr/include/${CMAKE_LIBRARY_ARCHITECTURE}/bits/stdint-uintn.h
         /usr/include/${CMAKE_LIBRARY_ARCHITECTURE}/bits/types.h)
+#add_dependencies(ada_specs_common gpr_header_name_fixer)
+
+# Add umwi lib which is dependency of AAA
+ada_add_library(
+  umwi_lib
+  gpr_umwi
+  umwi.gpr
+)
 
 # Add AAA lib for use in Ada ament lib
 ada_add_library(
@@ -56,6 +72,7 @@ ada_add_library(
   gpr_aaa
   aaa.gpr
 )
+add_dependencies(aaa_lib umwi_lib)
 
 # Export C_Strings for reuse here and rosidl
 ada_add_library(
@@ -64,8 +81,17 @@ ada_add_library(
   c_strings.gpr
 )
 
+# set(AMENT_INDEX_CPP_LIB "/opt/ros/jazzy/lib/libament_index_cpp.so")
+
+# if(NOT EXISTS ${AMENT_INDEX_CPP_LIB})
+#     message(FATAL_ERROR "ament_index_cpp library not found at ${AMENT_INDEX_CPP_LIB}")
+# endif()
+
 # Import ament_index_cpp lib for our Ada ament lib
-ada_import_c_libraries(${ament_index_cpp_LIBRARIES})
+ada_gpr_headers(rclada_common
+                ament_index_cpp)
+ada_gpr_link(rclada_common
+             ament_index_cpp)
 
 # Export the Ada ament library
 ada_add_library(

@@ -8,7 +8,9 @@ include(ada_project)
 list(REMOVE_DUPLICATES ADA_GPR_DIRS)
 list(SORT ADA_GPR_DIRS)
 
-
+# Where to find the header fixer
+# Where to find the generator
+set(ADA_HEADER_FIXER "@CMAKE_INSTALL_PREFIX@/lib/@PROJECT_NAME@/header_name_fixer")
 
 
 

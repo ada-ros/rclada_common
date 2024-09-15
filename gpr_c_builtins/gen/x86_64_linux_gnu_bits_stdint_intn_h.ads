@@ -1,5 +1,7 @@
 pragma Ada_2012;
+
 pragma Style_Checks (Off);
+pragma Warnings (Off, "-gnatwu");
 
 with Interfaces.C; use Interfaces.C;
 with x86_64_linux_gnu_bits_types_h;
@@ -7,7 +9,7 @@ with x86_64_linux_gnu_bits_types_h;
 package x86_64_linux_gnu_bits_stdint_intn_h is
 
   -- Define intN_t types.
-  --   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+  --   Copyright (C) 2017-2024 Free Software Foundation, Inc.
   --   This file is part of the GNU C Library.
   --   The GNU C Library is free software; you can redistribute it and/or
   --   modify it under the terms of the GNU Lesser General Public
@@ -30,3 +32,6 @@ package x86_64_linux_gnu_bits_stdint_intn_h is
    subtype int64_t is x86_64_linux_gnu_bits_types_h.uu_int64_t;  -- /usr/include/x86_64-linux-gnu/bits/stdint-intn.h:27
 
 end x86_64_linux_gnu_bits_stdint_intn_h;
+
+pragma Style_Checks (On);
+pragma Warnings (On, "-gnatwu");
